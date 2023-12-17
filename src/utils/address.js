@@ -7,5 +7,6 @@
 // export const stakingAddress = "0x1941f982ECE5F6aAfA238D3b5Eb79D8b37cC3Efc";
 
 //================== TESTNET =================================
+export const validChainId = 97;
 export const tokenAddress = "0x6a5e95736FDbA7E6AE291f79Dc0D8A60a4760a97";
 export const stakingAddress = "0x94Df532a3c9aEb107Cb769A3CD9Dfd266830022B";
