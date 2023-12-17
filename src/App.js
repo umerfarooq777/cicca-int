@@ -111,5 +111,5 @@ const {isLoadingData,amount,startTime,endTime,rewardTaken,rewardToBeWithdrawn,cl
     </div>
   );
 }
-
+ 
 export default App;
