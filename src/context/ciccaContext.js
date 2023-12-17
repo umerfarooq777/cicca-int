@@ -10,10 +10,12 @@ const { ethereum } = window;
 
 const CiccaContextProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(false);
+    const [allowRefresh, setAllowRefresh] = useState(true);
     const [currentAccount, setCurrentAccount] = useState();
     const [userAllowance, setUserAllowance] = useState("0");
     const [UserStakeDetails, setUserStakeDetails] = useState({
         isLoadingData:true,
+        userBal:"0",
         amount:"0",
         startTime:"0",
         endTime:"0",
@@ -88,22 +90,27 @@ const getStakinContractState = () => {
 }
 
 const getUserStakinDetails = async (userAddress) => {
-    const userData =  await getStakinContract().getDetails(userAddress)
-    const reward =  await getStakinContract().calculateReward(userAddress)
-    // console.log(stakingContract);
-    setUserStakeDetails(
-        {
-            isLoadingData:false,
-
-            amount:userData?.amount?.toString(),
-            startTime:userData?.startTime?.toString(),
-            endTime:userData?.endTime?.toString(),
-            rewardTaken:userData?.rewardTaken?.toString(),
-            rewardToBeWithdrawn:userData?.rewardToBeWithdrawn?.toString(),
-            claimed:userData?.claimed?.toString(),
-            rewardTillNow:reward.toString()
-        }
-    )
+    if (allowRefresh) {
+        
+        const userData =  await getStakinContract().getDetails(userAddress)
+        const reward =  await getStakinContract().calculateReward(userAddress)
+        const ciccaBal =  await getTokenContract().balanceOf(userAddress)
+        // console.log(stakingContract);
+        setUserStakeDetails(
+            {
+                userBal:ciccaBal.toString(),
+                
+                amount:userData?.amount?.toString(),
+                startTime:userData?.startTime?.toString(),
+                endTime:userData?.endTime?.toString(),
+                rewardTaken:userData?.rewardTaken?.toString(),
+                rewardToBeWithdrawn:userData?.rewardToBeWithdrawn?.toString(),
+                claimed:userData?.claimed?.toString(),
+                rewardTillNow:reward.toString(),
+                isLoadingData:false,
+            }
+        )
+    }
 }
 
 const getUserAllowance = async (userAddress) => {
@@ -121,59 +128,88 @@ const getUserAllowance = async (userAddress) => {
 
 const approveStakeAmount = async (amount) => {
     try {
-        let res =  await getTokenContract().approve(stakingAddress,getEthertoWei(amount))
+        setIsLoading(true)
+        let maxApproveAmt = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+        
+        let res =  await getTokenContract().approve(stakingAddress,maxApproveAmt)
         
         await getUserAllowance(currentAccount)
+        setIsLoading(false)
         
     } catch (error) {
+        setIsLoading(false)
         console.log("Error on approve:" , error);
         
     }
 }
-const stakeAmount = async (amount) => {
+const stakeCiccaAmount = async (amount) => {
     try {
+        setIsLoading(true)
 
         // whenNotPaused
         
         let res =  await getStakinContract().stake(getEthertoWei(amount))
+        setAllowRefresh(false)
         
         setUserStakeDetails((oldData)=>({...oldData,isLoadingData:true}))
         await getUserAllowance(currentAccount)
         await getUserStakinDetails(currentAccount)
+        setAllowRefresh(true)
+        setIsLoading(false)
         
     } catch (error) {
+        setIsLoading(false)
+        setAllowRefresh(true)
+
         console.log("Error on stake:" , error);
         
     }
 }
 const unstakeAmount = async (amount) => {
     try {
+        setIsLoading(true)
 
         // whenNotPaused
         
         let res =  await getStakinContract().unstake()
+        setAllowRefresh(false)
         
         setUserStakeDetails((oldData)=>({...oldData,isLoadingData:true}))
         
         await getUserStakinDetails(currentAccount)
+        setAllowRefresh(true)
+        setIsLoading(false)
         
     } catch (error) {
         console.log("Error on stake:" , error);
+        setAllowRefresh(true)
+        setIsLoading(false)
+
         
     }
 }
 const withdrawReward = async (amount) => {
     try {
+        setIsLoading(true)
+
 
         // whenNotPaused
         
+        
         let res =  await getStakinContract().withdrawReward()
+        setAllowRefresh(false)
         
         setUserStakeDetails((oldData)=>({...oldData,isLoadingData:true}))
         
         await getUserStakinDetails(currentAccount)
+        setAllowRefresh(true)
+        setIsLoading(false)
+        
         
     } catch (error) {
+        setAllowRefresh(true)
+        setIsLoading(false)
+
         console.log("Error on stake:" , error);
         
     }
@@ -194,7 +230,7 @@ const withdrawReward = async (amount) => {
     approveStakeAmount,
     unstakeAmount,
     withdrawReward,
-    stakeAmount,
+    stakeCiccaAmount,
     approveStakeAmount
         
 
