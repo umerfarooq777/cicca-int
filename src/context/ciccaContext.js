@@ -132,6 +132,8 @@ const approveStakeAmount = async (amount) => {
         let maxApproveAmt = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
         
         let res =  await getTokenContract().approve(stakingAddress,maxApproveAmt)
+        await res.wait()
+
         
         await getUserAllowance(currentAccount)
         setIsLoading(false)
@@ -148,8 +150,10 @@ const stakeCiccaAmount = async (amount) => {
 
         // whenNotPaused
         
-        let res =  await getStakinContract().stake(getEthertoWei(amount))
         setAllowRefresh(false)
+        let res =  await getStakinContract().stake(getEthertoWei(amount))
+        await res.wait()
+
         
         setUserStakeDetails((oldData)=>({...oldData,isLoadingData:true}))
         await getUserAllowance(currentAccount)
@@ -171,8 +175,10 @@ const unstakeAmount = async (amount) => {
 
         // whenNotPaused
         
-        let res =  await getStakinContract().unstake()
         setAllowRefresh(false)
+        let res =  await getStakinContract().unstake()
+        await res.wait()
+
         
         setUserStakeDetails((oldData)=>({...oldData,isLoadingData:true}))
         
@@ -196,8 +202,9 @@ const withdrawReward = async (amount) => {
         // whenNotPaused
         
         
-        let res =  await getStakinContract().withdrawReward()
         setAllowRefresh(false)
+        let res =  await getStakinContract().withdrawReward()
+        await res.wait()
         
         setUserStakeDetails((oldData)=>({...oldData,isLoadingData:true}))
         
