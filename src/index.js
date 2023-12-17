@@ -3,11 +3,14 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { CiccaContextProvider } from './context/ciccaContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
+    <CiccaContextProvider>
     <App />
+    </CiccaContextProvider>
   </React.StrictMode>
 );
 
